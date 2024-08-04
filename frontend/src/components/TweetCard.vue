@@ -21,6 +21,15 @@
         <div class="card-body py-1">
           <!-- <p class="card-text text-muted text-sm">Replying to @{{ author.username }}</p> -->
           <p class="card-text">{{ content }}</p>
+          <template v-if="referenced_tweet">
+            <SimpleTweetCard
+              :key="referenced_tweet.id"
+              :id="referenced_tweet.id"
+              :content="referenced_tweet.content"
+              :author="referenced_tweet.author"
+              :created_at="referenced_tweet.created_at"
+            />
+          </template>
 
         </div>
         <div class="card-footer text-muted d-flex justify-content-around border-0 bg-white">
@@ -40,14 +49,14 @@
             }"></i><span class="badge text-muted">{{ dislike_count }}</span>
           </div>
           <div>
-            <i @click="retweet_tweet" class="bi interactions"
-              :class="{ 'bi-repeat': !is_retweeted, 'bi-repeat text-primary text-bold': is_retweeted }"></i><span
-              class="badge text-muted">{{ retweet_count }}</span>
-          </div>
-          <div>
             <i @click="quote_tweet" class="bi interactions"
               :class="{ 'bi-chat-quote': !is_quoted, 'bi-chat-quote-fill': is_quoted }"></i><span
               class="badge text-muted">{{ quote_count }}</span>
+          </div>
+          <div>
+            <i @click="retweet_tweet" class="bi interactions"
+              :class="{ 'bi-repeat': !is_retweeted, 'bi-repeat text-primary text-bold': is_retweeted }"></i><span
+              class="badge text-muted">{{ retweet_count }}</span>
           </div>
           <div>
             <i class="interactions" data-bs-toggle="modal" :data-bs-target="`#delete-${unique_id}`"
@@ -100,33 +109,21 @@
                 :owner="reply.owner"
               />
             </div> -->
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
-            <p>this is a paragraph</p>
+            <div class="mx-4">
+              <SimpleTweetCard
+                :key="id"
+                :id="id"
+                :content="content"
+                :author="author"
+                :created_at="created_at"
+              />
+              <ReplyTweetForm :id="id" :author="author" />
+            </div>
+            
+            <div class="mx-4">
 
+            </div>
+            
           </div>
         </div>
       </div>
@@ -141,20 +138,24 @@
 import axios from "axios";
 import SimpleTweetCard from "./SimpleTweetCard"
 // import TweetForm from "./TweetForm.vue";
+import ReplyTweetForm from "./ReplyTweetForm.vue"
 
 let uid = 0;
 
 export default {
   name: "TweetCard",
   components: {
-    // TweetForm
+    SimpleTweetCard,
+    // TweetForm,
+    ReplyTweetForm
   },
   props: {
     id: Number,
     author: {},
     content: String,
     created_at: String,
-    owner: String
+    owner: String,
+    referenced_tweet: null
   },
   data() {
     return {
@@ -398,6 +399,7 @@ export default {
     },
   },
   created() {
+
     this.get_like_count()
     this.get_dislike_count()
     this.get_reply_count()

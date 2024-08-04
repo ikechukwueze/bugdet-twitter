@@ -38,7 +38,6 @@ export default {
     author: {},
     content: String,
     created_at: String,
-    owner: String
   },
   data() {
     return {
@@ -60,8 +59,8 @@ export default {
 }
 
 .profile-pic {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
 }
 </style>

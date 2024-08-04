@@ -1,13 +1,14 @@
 <template>
   <div class="col-9">
     <TweetForm @new-post="get_timeline"/>
-    <SimpleTweetCard
+    <TweetCard
       v-for="tweet in tweets"
       :key="tweet.id"
       :id="tweet.id"
       :content="tweet.content"
       :author="tweet.author"
       :created_at="tweet.created_at"
+      :referenced_tweet="tweet.referenced_tweet"
       :owner="tweet.owner"
     />
   </div>
@@ -16,16 +17,14 @@
 <script>
 import axios from "axios";
 import TweetForm from "./TweetForm.vue";
-// import TweetCard from "./TweetCard.vue";
-import SimpleTweetCard from "./SimpleTweetCard.vue";
+import TweetCard from "./TweetCard.vue";
 
 
 export default {
   name: "TimeLine",
   components: {
     TweetForm,
-    SimpleTweetCard,
-
+    TweetCard,
   },
   data() {
     return {
@@ -34,7 +33,7 @@ export default {
           id: 23,
           content: "",
           author: {},
-          referenced_tweet: {},
+          referenced_tweet: null,
           tweet_type: "",
           created_at: "",
           owner: ""
@@ -50,7 +49,6 @@ export default {
       })
         .then((response) => {
           this.tweets = response.data;
-          console.log(this.tweets)
         })
         .catch((error) => {
           console.log(error);

@@ -76,7 +76,6 @@ class QuoteTweetView(APIView):
             tweet.referenced_tweet.author,
             tweet,
         )
-        create_quote_notification(self.request.user, tweet)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 

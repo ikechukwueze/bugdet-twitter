@@ -37,7 +37,7 @@ class AccountSignUpSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+    username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
 
     def validate(self, attrs: dict) -> Union[serializers.ValidationError, dict]:
@@ -45,7 +45,7 @@ class LoginSerializer(serializers.Serializer):
         if not account:
             raise serializers.ValidationError(
                 {
-                    "email": "Incorrect email or password",
+                    "username": "Incorrect email or password",
                     "password": "Incorrect email or password.",
                 }
             )
@@ -67,13 +67,3 @@ class SimpleAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ["username", "display_name", "profile_pic"]
-
-
-
-# class FollowAccountSerializer(serializers.Serializer):
-#     username = serializers.CharField()
-
-#     def validate_username(self, username):
-#         if not Account.objects.filter(username=username).exists():
-#             raise serializers.ValidationError(detail='User does not exist')
-#         return username

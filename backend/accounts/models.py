@@ -29,10 +29,6 @@ class Account(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 
-    # followers = models.ManyToManyField("self", related_name="all_followers", symmetrical=False, blank=True)
-    # following = models.ManyToManyField("self", related_name="all_following", symmetrical=False, blank=True)
-    # blocked_accounts = models.ManyToManyField("self", related_name="all_blocked_accounts", symmetrical=False, blank=True)
-
     objects = AccountManager()
 
     USERNAME_FIELD = "username"

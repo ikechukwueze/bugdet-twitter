@@ -1,8 +1,7 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
+from rest_framework import views, status, response
 from .models import Notification
 from .serializers import NotificationSerializer
-
-
 
 
 class NotificationListView(ListAPIView):
@@ -10,6 +9,19 @@ class NotificationListView(ListAPIView):
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user)
+
+
+class NotificationCountView(views.APIView):
+    def get(self, request):
+        account = self.request.user
+        notification_count = (
+            Notification.objects
+            .filter(recipient=account, is_read=False)
+            .count()
+        )
+        return response.Response(
+            {"notification_count": notification_count}, status.HTTP_200_OK
+        )
 
 
 class MarkNotificationAsReadView(UpdateAPIView):

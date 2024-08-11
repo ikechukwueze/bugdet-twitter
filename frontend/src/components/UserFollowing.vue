@@ -1,0 +1,88 @@
+<template>
+  <div class="col-9 mt-4 w-100 text-start">
+    <nav>
+      <div class="nav nav-pills nav-fill" id="nav-tab" role="tablist">
+        <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button"
+          role="tab" aria-controls="nav-home" aria-selected="true">Following</button>
+        <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button"
+          role="tab" aria-controls="nav-profile" aria-selected="false">Followers</button>
+      </div>
+    </nav>
+    <div class="tab-content px-3" id="nav-tabContent">
+      <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
+        <FollowerCard v-for="(follower, key) in followers" :key="key" :username="follower.username"
+          :display_name="follower.display_name" :bio="follower.bio" :profile_pic="follower.profile_pic" />
+      </div>
+      <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
+        <FollowerCard v-for="(account, key) in following" :key="key" :username="account.username"
+          :display_name="account.display_name" :bio="account.bio" :profile_pic="account.profile_pic" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+import FollowerCard from "./FollowerCard.vue";
+
+
+export default {
+  name: "UserFollowing",
+  components: {
+    FollowerCard
+  },
+  props: {
+    username: String
+  },
+  data() {
+    return {
+      following: [],
+      followers: []
+    };
+  },
+  methods: {
+    get_following(username) {
+      axios({
+        method: "get",
+        url: `followers/${username}/following`,
+      })
+        .then((response) => {
+          this.following = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    get_followers(username) {
+      axios({
+        method: "get",
+        url: `followers/${username}/followers`,
+      })
+        .then((response) => {
+          this.followers = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+
+
+  },
+  async created() {
+    this.get_followers(this.username)
+    this.get_following(this.username)
+  },
+  watch: {
+    username(val) {
+      this.get_timeline(val)
+    }
+  }
+};
+</script>
+
+<style>
+.main {
+  max-width: 1200px;
+}
+</style>

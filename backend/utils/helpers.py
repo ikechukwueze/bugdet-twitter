@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List
 from django.utils.timezone import make_aware
 from django.utils import timezone
+from django.db.models import QuerySet, F
 from accounts.models import Account
 from timeline.models import TimeLine
 from followers.models import Follower
@@ -159,3 +160,7 @@ def create_reply_notification(sender: Account, recipient: Account, tweet: Tweet)
         notification_type=NotificationType.REPLY
     )
     return notification
+
+
+def mark_notification_as_read(notifications_qs:QuerySet):
+    pass

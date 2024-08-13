@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.db import transaction
+from django.db.models import OuterRef, Exists
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework import response, status
@@ -51,7 +52,14 @@ class UserFollowersListView(ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs["username"]
-        followers = Follower.objects.filter(account__username=username)
+        is_following = (
+            Follower.objects
+            .filter(account=OuterRef('follower'), follower=OuterRef('account'))
+        )
+        followers = (
+            Follower.objects.filter(account__username=username)
+            .annotate(is_following=Exists(is_following))
+        )
         return followers
 
 
@@ -60,9 +68,16 @@ class UserFollowingListView(ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs["username"]
-        following = Follower.objects.filter(follower__username=username)
+        follows_back = (
+            Follower.objects
+            .filter(account=OuterRef('follower'), follower=OuterRef('account'))
+        )
+        following = (
+            Follower.objects
+            .filter(follower__username=username)
+            .annotate(follows_back=Exists(follows_back))
+        )
         return following
-
 
 
 class UserFollowerCountView(APIView):
@@ -72,7 +87,7 @@ class UserFollowerCountView(APIView):
     def get(self, request, username):
         account = self.get_object(username)
         count = Follower.objects.filter(account=account).count()
-        return response.Response({'followers': count}, status=status.HTTP_200_OK)
+        return response.Response({"followers": count}, status=status.HTTP_200_OK)
 
 
 class UserFollowingCountView(APIView):
@@ -82,4 +97,4 @@ class UserFollowingCountView(APIView):
     def get(self, request, username):
         account = self.get_object(username)
         count = Follower.objects.filter(follower=account).count()
-        return response.Response({'following': count}, status=status.HTTP_200_OK)
+        return response.Response({"following": count}, status=status.HTTP_200_OK)

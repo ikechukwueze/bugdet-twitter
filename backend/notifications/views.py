@@ -1,14 +1,26 @@
 from rest_framework.generics import ListAPIView, UpdateAPIView
 from rest_framework import views, status, response
+from django.utils import timezone
+from django.db.models import F
 from .models import Notification
-from .serializers import NotificationSerializer
+from .serializers import NotificationSerializer, SimpleNotificationSerializer
+
+
+class CurrentNotificationListView(ListAPIView):
+    serializer_class = SimpleNotificationSerializer
+
+    def get_queryset(self):
+        today = timezone.datetime.today().date()
+        return Notification.objects.filter(recipient=self.request.user, created_at__date=today).order_by('-created_at')
 
 
 class NotificationListView(ListAPIView):
-    serializer_class = NotificationSerializer
+    serializer_class = SimpleNotificationSerializer
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
+        qs = Notification.objects.filter(recipient=self.request.user).order_by('-created_at')
+        qs.update(is_read=True)
+        return qs
 
 
 class NotificationCountView(views.APIView):

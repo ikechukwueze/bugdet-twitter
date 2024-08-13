@@ -32,6 +32,9 @@ urlpatterns = [
     path("<str:username>/", views.UserTweetsView.as_view(), name="user-tweets"),
     path("<str:username>/replies/", views.UserRepliesView.as_view(), name="user-replies"),
     path("<str:username>/quotes/", views.UserQuotesView.as_view(), name="user-quotes"),
+    path("<str:username>/retweets/", views.UserRetweetsView.as_view(), name="user-retweets"),
+    path("<str:username>/liked-tweets/", views.UserLikedTweetsView.as_view(), name="user-liked-tweets"),
+    path("<str:username>/disliked-tweets/", views.UserDislikedTweetsView.as_view(), name="user-disliked-tweets"),
 ]
 
 

@@ -2,8 +2,9 @@ from django.shortcuts import render
 from rest_framework import views
 from rest_framework import response
 from rest_framework import status
+from rest_framework import generics
 from .models import Account
-from .serializers import AccountSignUpSerializer, LoginSerializer#, FollowAccountSerializer
+from .serializers import AccountSignUpSerializer, LoginSerializer, AccountSerializer
 
 # Create your views here.
 
@@ -25,40 +26,32 @@ class AccountSignUpView(views.APIView):
         return response.Response(account_details, status=status.HTTP_201_CREATED)
 
 
-class AccountLoginView(views.APIView):
+
+class AccountLoginView(generics.GenericAPIView):
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        account = serializer.validated_data["account"]
-        account_details = {
-            "email": account.email,
-            "username": account.username,
-            "display_name": account.display_name,
-            "profile_pic": account.profile_pic,
-            "token": account.get_token(),
-        }
-        return response.Response(account_details, status=status.HTTP_200_OK)
+        serializer.save()
+        # account = serializer.validated_data["account"]
+        # serializer.save()
+        # print(serializer.data)
+        # account_details = {
+        #     "email": account.email,
+        #     "username": account.username,
+        #     "display_name": account.display_name,
+        #     "profile_pic": account.profile_pic.url,
+        #     "token": account.get_token(),
+        # }
+
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# class FollowAccountView(views.APIView):
-#     def post(self, request):
-#         serializer = FollowAccountSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         username = serializer.validated_data['username']
-#         account_to_follow = Account.objects.get(username=username)
-#         self.request.user.following.add(account_to_follow)
-#         return response.Response(status=status.HTTP_201_CREATED)
-    
 
-
-# class UnfollowAccountView(views.APIView):
-#     def post(self, request):
-#         serializer = FollowAccountSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         username = serializer.validated_data['username']
-#         account_to_unfollow = Account.objects.get(username=username)
-#         self.request.user.following.remove(account_to_unfollow)
-#         return response.Response(status=status.HTTP_201_CREATED)
+class RetrieveUserDetailView(generics.RetrieveAPIView):
+    serializer_class = AccountSerializer
+    queryset = Account.objects.all()
+    lookup_field = 'username'
+    lookup_url_kwarg = 'username'

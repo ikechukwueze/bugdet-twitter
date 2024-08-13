@@ -27,5 +27,5 @@ class UserTimelineView(ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs.get("username")
-        queryset = TimeLine.objects.filter(viewers__username=username)
+        queryset = TimeLine.objects.filter(tweet__author__username=username)
         return queryset

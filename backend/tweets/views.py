@@ -101,7 +101,7 @@ class RetweetView(APIView):
         push_tweet_to_followers(self.request.user, retweet)
         create_retweet_notification(
             account,
-            tweet.referenced_tweet.author,
+            tweet.author,
             tweet,
         )
         return response.Response(status=status.HTTP_201_CREATED)
@@ -158,6 +158,39 @@ class UserQuotesView(ListAPIView):
         return Tweet.objects.filter(
             author__username=username, tweet_type=TweetType.QUOTE
         )
+
+
+class UserRetweetsView(ListAPIView):
+    serializer_class = TweetSerializer
+
+    def get_queryset(self):
+        username = self.kwargs["username"]
+        return Tweet.objects.filter(
+            author__username=username, tweet_type=TweetType.RETWEET
+        )
+
+
+class UserLikedTweetsView(ListAPIView):
+    serializer_class = TweetSerializer
+
+    def get_queryset(self):
+        username = self.kwargs["username"]
+        return Tweet.objects.filter(
+            likes__account__username=username
+        )
+
+
+class UserDislikedTweetsView(ListAPIView):
+    serializer_class = TweetSerializer
+
+    def get_queryset(self):
+        username = self.kwargs["username"]
+        return Tweet.objects.filter(
+            dislikes__account__username=username
+        )
+
+
+
 
 
 class LikeTweetView(APIView):

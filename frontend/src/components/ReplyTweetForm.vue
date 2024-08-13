@@ -2,7 +2,7 @@
   <div class="row">
     <div class="d-flex p-3 my-2 border rounded-3">
       <div class="flex-shrink-0">
-        <img class="rounded-circle profile-pic" :src="author.profile_pic" />
+        <img class="rounded-circle profile-pic" :src="this.$store.state.profile_pic" />
       </div>
       <div class="card ms-0 w-100 border-0">
         <div class="card-header border-0 bg-white">
@@ -19,7 +19,7 @@
           </div>
         </div>
         <div class="card-body py-1 px-0">
-          <form @submit.prevent="post_tweet">
+          <form @submit.prevent="reply_tweet">
             <div class="card-body py-1 bg-transparent">
               <textarea class="form-control bg-transparent border-1" minlength="1" maxlength="280s"
                 id="exampleFormControlTextarea1" placeholder="Post your reply" rows="3" v-model="content"
@@ -32,7 +32,6 @@
             </div>
           </form>
         </div>
-
       </div>
     </div>
   </div>
@@ -44,10 +43,12 @@
 import axios from "axios";
 
 export default {
-  name: "TweetForm",
+  name: "ReplyTweetForm",
   props: {
     id: Number,
-    author: {}
+    author: {
+      username: String
+    }
   },
   data() {
     return {
@@ -55,15 +56,15 @@ export default {
     };
   },
   methods: {
-    post_tweet() {
+    reply_tweet() {
       axios({
         method: "post",
-        url: `http://localhost:8000/tweets/${this.id}/reply/`,
+        url: `/tweets/${this.id}/reply/`,
         data: { content: this.content },
       })
         .then(() => {
           this.content = "";
-          this.$emit("new-post")
+          this.$emit("replied-tweet")
         })
         .catch((error) => {
           console.log(error);
@@ -83,8 +84,8 @@ export default {
 }
 
 .profile-pic {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
 }
 </style>

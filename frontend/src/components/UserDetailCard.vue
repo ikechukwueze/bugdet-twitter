@@ -13,7 +13,7 @@
               <span> &#183; </span>
               <span class="text-muted"> @{{ user_details.username }} </span>
             </div>
-            <div>
+            <div v-if="is_current_user">
               <span><button class="btn btn-primary btn-sm" id="edit-profile-btn">Edit profile</button></span>
             </div>
           </div>
@@ -49,6 +49,7 @@ export default {
   components: {
   },
   props: {
+    username: String
   },
   data() {
     return {
@@ -60,15 +61,16 @@ export default {
         short_signup_date: ""
       },
       following_count: 0,
-      follower_count: 0
+      follower_count: 0,
+      is_current_user: false
     };
   },
 
   methods: {
-    get_user_details() {
+    get_user_details(username) {
       axios({
         method: "get",
-        url: `/accounts/${this.$store.state.username}/detail/`,
+        url: `/accounts/${username}/detail/`,
       })
         .then((response) => {
           this.user_details = response.data;
@@ -78,10 +80,10 @@ export default {
           console.log(error);
         });
     },
-    get_follower_count() {
+    get_follower_count(username) {
       axios({
         method: "get",
-        url: `/followers/${this.$store.state.username}/follower-count/`,
+        url: `/followers/${username}/follower-count/`,
       })
         .then((response) => {
           this.follower_count = response.data.followers;
@@ -90,10 +92,10 @@ export default {
           console.log(error);
         });
     },
-    get_following_count() {
+    get_following_count(username) {
       axios({
         method: "get",
-        url: `/followers/${this.$store.state.username}/following-count/`,
+        url: `/followers/${username}/following-count/`,
       })
         .then((response) => {
           this.following_count = response.data.following;
@@ -105,10 +107,18 @@ export default {
   },
 
   created() {
-    this.get_user_details()
-    this.get_follower_count()
-    this.get_following_count()
+    this.get_user_details(this.username)
+    this.get_follower_count(this.username)
+    this.get_following_count(this.username)
+    this.is_current_user = this.user_details.username === this.$store.state.username
   },
+  watch: {
+    username(val){
+      this.get_user_details(val)
+      this.get_follower_count(val)
+      this.get_following_count(val)
+    }
+  }
 };
 </script>
 

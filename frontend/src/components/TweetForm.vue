@@ -2,7 +2,7 @@
   <div class="mb-5 tweet-form">
     <div class="row border rounded p-3">
       <div class="col-1">
-        <img class="rounded-circle" src="https://placehold.co/60" alt="" />
+        <img class="rounded-circle profile-pic" :src="this.$store.state.profile_pic" alt="" />
       </div>
       <div class="col-11">
         <form @submit.prevent="post_tweet">
@@ -45,13 +45,14 @@ export default {
   data() {
     return {
       content: "",
+      profile_pic: ""
     };
   },
   methods: {
     post_tweet() {
       axios({
         method: "post",
-        url: "http://localhost:8000/tweets/post/",
+        url: "/tweets/post/",
         data: { content: this.content },
       })
         .then(() => {
@@ -63,6 +64,9 @@ export default {
         });
     },
   },
+  created () {
+    this.profile_pic = this.$store.state.profile_pic
+  }
 };
 </script>
 
@@ -71,7 +75,13 @@ export default {
   resize: none;
 }
 
-.tweet-faorm {
-  background-color:blue
+.tweet-foarm {
+  background-color:rgb(216, 216, 236)
+}
+
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 </style>

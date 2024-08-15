@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from django.db.models import Q, Value
+from django.db.models import Q
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
@@ -17,9 +17,8 @@ from utils.helpers import (
     create_dislike_notification,
     create_reply_notification,
     create_quote_notification,
-    create_retweet_notification
+    create_retweet_notification,
 )
-from notifications.models import NotificationType
 from .serializers import TweetSerializer, ReplyTweetSerializer, QuoteTweetSerializer
 from .models import Tweet, TweetType, LikedTweet, DislikedTweet
 from .permissions import IsOwnerOrReadOnly
@@ -52,9 +51,10 @@ class ReplyTweetView(APIView):
         push_tweet_to_timeline(tweet)
         push_tweet_to_followers(self.request.user, tweet)
         create_reply_notification(
-            self.request.user,
-            tweet.referenced_tweet.author,
-            tweet,
+            sender=self.request.user,
+            recipient=tweet.referenced_tweet.author,
+            reply=tweet,
+            original_tweet=tweet.referenced_tweet,
         )
         create_mention_notification(self.request.user, tweet)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -71,11 +71,13 @@ class QuoteTweetView(APIView):
         tweet = serializer.save(author=self.request.user, tweet_type=TweetType.QUOTE)
         push_tweet_to_timeline(tweet)
         push_tweet_to_followers(self.request.user, tweet)
-        _ = create_quote_notification(
-            self.request.user,
-            tweet.referenced_tweet.author,
-            tweet,
+        create_quote_notification(
+            sender=self.request.user,
+            recipient=tweet.referenced_tweet.author,
+            quoted_tweet=tweet.referenced_tweet,
+            quote=tweet,
         )
+        create_mention_notification(self.request.user, tweet)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -95,14 +97,11 @@ class RetweetView(APIView):
         if not created:
             retweet.delete()
             return response.Response(status=status.HTTP_204_NO_CONTENT)
-        
 
         push_tweet_to_timeline(retweet)
-        push_tweet_to_followers(self.request.user, retweet)
+        push_tweet_to_followers(account, retweet)
         create_retweet_notification(
-            account,
-            tweet.author,
-            tweet,
+            sender=account, recipient=tweet.author, reposted_tweet=tweet
         )
         return response.Response(status=status.HTTP_201_CREATED)
 
@@ -175,9 +174,7 @@ class UserLikedTweetsView(ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs["username"]
-        return Tweet.objects.filter(
-            likes__account__username=username
-        )
+        return Tweet.objects.filter(likes__account__username=username)
 
 
 class UserDislikedTweetsView(ListAPIView):
@@ -185,12 +182,7 @@ class UserDislikedTweetsView(ListAPIView):
 
     def get_queryset(self):
         username = self.kwargs["username"]
-        return Tweet.objects.filter(
-            dislikes__account__username=username
-        )
-
-
-
+        return Tweet.objects.filter(dislikes__account__username=username)
 
 
 class LikeTweetView(APIView):
@@ -219,10 +211,12 @@ class LikeTweetView(APIView):
         if not created:
             liked_tweet.delete()
             return response.Response(status=status.HTTP_204_NO_CONTENT)
-        
+
         if not account == liked_tweet.referenced_tweet.author:
-            create_like_notification(account, liked_tweet_author, tweet)
-        
+            create_like_notification(
+                sender=account, recipient=liked_tweet_author, liked_tweet=tweet
+            )
+
         return response.Response(status=status.HTTP_201_CREATED)
 
 
@@ -238,7 +232,7 @@ class DislikeTweetView(APIView):
             liked_tweet.delete()
         except LikedTweet.DoesNotExist:
             pass
-    
+
     @transaction.atomic
     def post(self, request, tweet_id):
         account = self.request.user
@@ -251,15 +245,17 @@ class DislikeTweetView(APIView):
         if not created:
             disliked_tweet.delete()
             return response.Response(status=status.HTTP_204_NO_CONTENT)
-        
+
         if not account == disliked_tweet.referenced_tweet.author:
-            create_dislike_notification(account, disliked_tweet_author, tweet)
-        
+            create_dislike_notification(
+                sender=account, recipient=disliked_tweet_author, disliked_tweet=tweet
+            )
+
         return response.Response(status=status.HTTP_201_CREATED)
 
 
-
 ### Tweet stat counts
+
 
 class TweetLikeCountView(APIView):
     def get_object(self, tweet_id):
@@ -269,7 +265,7 @@ class TweetLikeCountView(APIView):
     def get(self, request, tweet_id):
         tweet = self.get_object(tweet_id)
         like_count = LikedTweet.objects.filter(referenced_tweet=tweet).count()
-        return response.Response({'like_count': like_count}, status=status.HTTP_200_OK)
+        return response.Response({"like_count": like_count}, status=status.HTTP_200_OK)
 
 
 class TweetDisLikeCountView(APIView):
@@ -280,7 +276,9 @@ class TweetDisLikeCountView(APIView):
     def get(self, request, tweet_id):
         tweet = self.get_object(tweet_id)
         dislike_count = DislikedTweet.objects.filter(referenced_tweet=tweet).count()
-        return response.Response({'dislike_count': dislike_count}, status=status.HTTP_200_OK)
+        return response.Response(
+            {"dislike_count": dislike_count}, status=status.HTTP_200_OK
+        )
 
 
 class TweetReplyCountView(APIView):
@@ -290,8 +288,12 @@ class TweetReplyCountView(APIView):
     @transaction.atomic
     def get(self, request, tweet_id):
         tweet = self.get_object(tweet_id)
-        reply_count = Tweet.objects.filter(referenced_tweet=tweet, tweet_type=TweetType.REPLY).count()
-        return response.Response({'reply_count': reply_count}, status=status.HTTP_200_OK)
+        reply_count = Tweet.objects.filter(
+            referenced_tweet=tweet, tweet_type=TweetType.REPLY
+        ).count()
+        return response.Response(
+            {"reply_count": reply_count}, status=status.HTTP_200_OK
+        )
 
 
 class TweetRepostCountView(APIView):
@@ -304,7 +306,9 @@ class TweetRepostCountView(APIView):
         ref_tweet = Q(referenced_tweet=tweet)
         reposted = Q(tweet_type=TweetType.QUOTE) | Q(tweet_type=TweetType.RETWEET)
         repost_count = Tweet.objects.filter(ref_tweet, reposted).count()
-        return response.Response({'repost_count': repost_count}, status=status.HTTP_200_OK)
+        return response.Response(
+            {"repost_count": repost_count}, status=status.HTTP_200_OK
+        )
 
 
 class TweetQuoteCountView(APIView):
@@ -314,9 +318,13 @@ class TweetQuoteCountView(APIView):
     @transaction.atomic
     def get(self, request, tweet_id):
         tweet = self.get_object(tweet_id)
-        quote_count = Tweet.objects.filter(referenced_tweet=tweet, tweet_type=TweetType.QUOTE).count()
-        return response.Response({'quote_count': quote_count}, status=status.HTTP_200_OK)
-    
+        quote_count = Tweet.objects.filter(
+            referenced_tweet=tweet, tweet_type=TweetType.QUOTE
+        ).count()
+        return response.Response(
+            {"quote_count": quote_count}, status=status.HTTP_200_OK
+        )
+
 
 class TweetRetweetCountView(APIView):
     def get_object(self, tweet_id):
@@ -325,12 +333,16 @@ class TweetRetweetCountView(APIView):
     @transaction.atomic
     def get(self, request, tweet_id):
         tweet = self.get_object(tweet_id)
-        retweet_count = Tweet.objects.filter(referenced_tweet=tweet, tweet_type=TweetType.RETWEET).count()
-        return response.Response({'retweet_count': retweet_count}, status=status.HTTP_200_OK)
-
+        retweet_count = Tweet.objects.filter(
+            referenced_tweet=tweet, tweet_type=TweetType.RETWEET
+        ).count()
+        return response.Response(
+            {"retweet_count": retweet_count}, status=status.HTTP_200_OK
+        )
 
 
 # Tweet status
+
 
 class TweetLikeStatusView(APIView):
     def get_object(self, tweet_id):
@@ -340,8 +352,10 @@ class TweetLikeStatusView(APIView):
     def get(self, request, tweet_id):
         account = self.request.user
         tweet = self.get_object(tweet_id)
-        liked_status = LikedTweet.objects.filter(account=account, referenced_tweet=tweet).exists()
-        return response.Response({'is_liked': liked_status}, status=status.HTTP_200_OK)
+        liked_status = LikedTweet.objects.filter(
+            account=account, referenced_tweet=tweet
+        ).exists()
+        return response.Response({"is_liked": liked_status}, status=status.HTTP_200_OK)
 
 
 class TweetDislikeStatusView(APIView):
@@ -352,8 +366,12 @@ class TweetDislikeStatusView(APIView):
     def get(self, request, tweet_id):
         account = self.request.user
         tweet = self.get_object(tweet_id)
-        disliked_status = DislikedTweet.objects.filter(account=account, referenced_tweet=tweet).exists()
-        return response.Response({'is_disliked': disliked_status}, status=status.HTTP_200_OK)
+        disliked_status = DislikedTweet.objects.filter(
+            account=account, referenced_tweet=tweet
+        ).exists()
+        return response.Response(
+            {"is_disliked": disliked_status}, status=status.HTTP_200_OK
+        )
 
 
 class TweetRetweetStatusView(APIView):
@@ -364,8 +382,12 @@ class TweetRetweetStatusView(APIView):
     def get(self, request, tweet_id):
         account = self.request.user
         tweet = self.get_object(tweet_id)
-        retweet_status = Tweet.objects.filter(author=account, referenced_tweet=tweet, tweet_type=TweetType.RETWEET).exists()
-        return response.Response({'is_retweeted': retweet_status}, status=status.HTTP_200_OK)
+        retweet_status = Tweet.objects.filter(
+            author=account, referenced_tweet=tweet, tweet_type=TweetType.RETWEET
+        ).exists()
+        return response.Response(
+            {"is_retweeted": retweet_status}, status=status.HTTP_200_OK
+        )
 
 
 class TweetQuoteStatusView(APIView):
@@ -376,5 +398,7 @@ class TweetQuoteStatusView(APIView):
     def get(self, request, tweet_id):
         account = self.request.user
         tweet = self.get_object(tweet_id)
-        quote_status = Tweet.objects.filter(author=account, referenced_tweet=tweet, tweet_type=TweetType.QUOTE).exists()
-        return response.Response({'is_quoted': quote_status}, status=status.HTTP_200_OK)
+        quote_status = Tweet.objects.filter(
+            author=account, referenced_tweet=tweet, tweet_type=TweetType.QUOTE
+        ).exists()
+        return response.Response({"is_quoted": quote_status}, status=status.HTTP_200_OK)

@@ -10,10 +10,31 @@
     </nav>
     <div class="tab-content px-3" id="nav-tabContent">
       <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" tabindex="0">
-        <NotificationCard v-for="(notification_item, key) in current_notifications" :key="key" :notification="notification_item"/>
+        <template  v-for="(notification_item, key) in current_notifications" :key="key">
+          <template v-if="notification_item.notification_type === 'MENTION'">
+            <MentionNotificationCard :notification="notification_item" />
+          </template>
+          <template v-else-if="notification_item.notification_type === 'REPLY'">
+            <ReplyNotificationCard :notification="notification_item" />
+          </template>
+          <template v-else>
+            <NotificationCard :notification="notification_item"/>
+          </template>
+        </template>
       </div>
       <div class="tab-pane fade show" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab" tabindex="0">
-        <NotificationCard v-for="(notification_item, key) in all_notifications" :key="key" :notification="notification_item"/>
+        <!-- <NotificationCard v-for="(notification_item, key) in all_notifications" :key="key" :notification="notification_item"/> -->
+        <template  v-for="(notification_item, key) in all_notifications" :key="key">
+          <template v-if="notification_item.notification_type === 'MENTION'">
+            <MentionNotificationCard :notification="notification_item" />
+          </template>
+          <template v-else-if="notification_item.notification_type === 'REPLY'">
+            <ReplyNotificationCard :notification="notification_item" />
+          </template>
+          <template v-else>
+            <NotificationCard :notification="notification_item"/>
+          </template>
+        </template>
       </div>
       
     </div>
@@ -23,12 +44,16 @@
 <script>
 import axios from "axios";
 import NotificationCard from "./NotificationCard.vue";
+import MentionNotificationCard from "./MentionNotificationCard.vue";
+import ReplyNotificationCard from "./ReplyNotificationCard.vue";
 
 
 export default {
   name: "UserNotificationVue",
   components: {
     NotificationCard,
+    MentionNotificationCard,
+    ReplyNotificationCard
   },
   props: {
     username: String

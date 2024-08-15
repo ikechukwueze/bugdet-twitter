@@ -13,15 +13,14 @@
             </div>
             <div>
               <span>
-                <i :class="notification_type_icon[notification.notification_type]"></i>
+                <i class="bi bi-at"></i>
               </span>
             </div>
           </div>
         </div>
         <div class="card-body py-1">
-          <p>@{{ notification.sender.username }} {{ notification_message_dict[notification.notification_type] }}
-          </p>
-          <p class="card-text text-muted fst-italic">{{ notification.recipient_tweet.content }}</p>
+          <p>@{{ notification.sender.username }} mentioned you in a tweet.</p>
+          <p class="card-text text-muted fst-italic">{{ notification.sender_tweet.content }}</p>
         </div>
         <div class="card-footer text-muted d-flex justify-content-around border-0 bg-white">
         </div>
@@ -33,7 +32,7 @@
 <script>
 
 export default {
-  name: "NotificationCard",
+  name: "MentionNotificationCard",
   components: {
   },
   props: {
@@ -41,19 +40,6 @@ export default {
   },
   data() {
     return {
-      notification_message_dict: {
-        'LIKE': 'liked your tweet.',
-        'DISLIKE': 'disliked your tweet',
-        'RETWEET': 'reposted your tweet.',
-        'QUOTE': 'quoted your tweet',
-        'FOLLOW': 'followed you.'
-      },
-      notification_type_icon: {
-        'LIKE': 'bi bi-heart-fill text-primary text-bold',
-        'DISLIKE': 'bi bi-hand-thumbs-down-fill text-primary text-bold',
-        'RETWEET': 'bi bi-repeat text-primary text-bold',
-        'QUOTE': 'bi bi-chat-quote-fill text-primary text-bold',
-      }
     }
   }
 }

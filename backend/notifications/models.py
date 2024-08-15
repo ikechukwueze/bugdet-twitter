@@ -6,22 +6,37 @@ from tweets.models import Tweet
 
 
 class NotificationType(models.TextChoices):
-    FOLLOW = 'FOLLOW', 'FOLLOW'
-    LIKE = 'LIKE', 'LIKE'
-    DISLIKE = 'DISLIKE', 'DISLIKE'
-    RETWEET = 'RETWEET', 'RETWEET'
-    REPLY = 'REPLY', 'REPLY'
-    QUOTE = 'QUOTE', 'QUOTE'
-    MENTION = 'MENTION', 'MENTION'
+    FOLLOW = "FOLLOW", "FOLLOW"
+    LIKE = "LIKE", "LIKE"
+    DISLIKE = "DISLIKE", "DISLIKE"
+    RETWEET = "RETWEET", "RETWEET"
+    REPLY = "REPLY", "REPLY"
+    QUOTE = "QUOTE", "QUOTE"
+    MENTION = "MENTION", "MENTION"
+
 
 class Notification(models.Model):
-    sender = models.ForeignKey(Account, related_name='sent_notifications', on_delete=models.CASCADE)
-    recipient = models.ForeignKey(Account, related_name='notifications', on_delete=models.CASCADE)
+    sender = models.ForeignKey(Account, related_name="sent_notifications", on_delete=models.CASCADE)
+    recipient = models.ForeignKey(Account, related_name="notifications", on_delete=models.CASCADE)
     notification_type = models.CharField(max_length=10, choices=NotificationType.choices)
-    tweet = models.ForeignKey(Tweet, related_name='notifications', on_delete=models.CASCADE, null=True, blank=True)
+    sender_tweet = models.ForeignKey(
+        Tweet,
+        related_name="trigger_notifications",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="The tweet that triggered the notification.",
+    )
+    recipient_tweet = models.ForeignKey(
+        Tweet,
+        related_name="notifications",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="The tweet that has been quoted/retweet/replied to etc.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
-    # extra_data = models.JSONField(null=True, blank=True)  # For any extra data related to the notification
 
     def __str__(self):
-        return f'{self.sender} {self.get_notification_type_display()} {self.recipient}'
+        return f"{self.sender} {self.get_notification_type_display()} {self.recipient}"

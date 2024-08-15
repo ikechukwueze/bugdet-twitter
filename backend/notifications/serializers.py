@@ -8,10 +8,11 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = [
-            "recipient",
             "sender",
+            "recipient",
             "notification_type",
-            "tweet",
+            "sender_tweet",
+            "recipient_tweet",
             "created_at",
             "is_read",
         ]
@@ -20,17 +21,19 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class SimpleNotificationSerializer(serializers.ModelSerializer):
-    recipient = SimpleAccountSerializer(read_only=True)
     sender = SimpleAccountSerializer(read_only=True)
-    tweet = SimpleTweetSerializer(read_only=True)
+    recipient = SimpleAccountSerializer(read_only=True)
+    sender_tweet = SimpleTweetSerializer(read_only=True)
+    recipient_tweet = SimpleTweetSerializer(read_only=True)
 
     class Meta:
         model = Notification
         fields = [
-            "recipient",
             "sender",
+            "recipient",
             "notification_type",
-            "tweet",
+            "sender_tweet",
+            "recipient_tweet",
             "created_at",
             "is_read",
         ]

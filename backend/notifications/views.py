@@ -12,6 +12,7 @@ class CurrentNotificationListView(ListAPIView):
         today = timezone.datetime.today().date()
         qs = (
             Notification.objects
+            .select_related('sender_tweet', 'recipient_tweet')
             .filter(recipient=self.request.user, created_at__date=today)
             .order_by("-created_at")
         )
@@ -24,6 +25,7 @@ class NotificationListView(ListAPIView):
     def get_queryset(self):
         qs = (
             Notification.objects
+            .select_related('sender_tweet', 'recipient_tweet')
             .filter(recipient=self.request.user)
             .order_by("-created_at")
         )

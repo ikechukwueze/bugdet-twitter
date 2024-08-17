@@ -5,6 +5,7 @@ import ProfileVue from "@/views/Profile.vue"
 import FollowersVue from "@/views/Followers.vue"
 import NotificationsVue from "@/views/Notifications.vue"
 import ThreadVue from "@/views/Thread.vue"
+import ExploreVue from "@/views/Explore.vue"
 // import LostPup from "@/views/404.vue"
 import store from "@/store"
 //import NProgress from 'nprogress';
@@ -43,6 +44,12 @@ const routes = [
         path: "/tweet/:tweet_id/",
         name: "ThreadPage",
         component: ThreadVue,
+        props: true
+    },
+    {
+        path: "/explore/",
+        name: "ExplorePage",
+        component: ExploreVue,
         props: true
     },
     // {

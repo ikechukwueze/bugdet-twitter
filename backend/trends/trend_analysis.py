@@ -7,27 +7,32 @@ from nltk.util import ngrams
 from nltk.corpus import stopwords
 
 
-
-
 def extract_tokens(text: str):
     tokens = text.split()
     cleaned_tokens = [token.rstrip(string.punctuation) for token in tokens]
     return cleaned_tokens
 
 
-def extract_bigram(tokens: List[str]):
+def extract_unigrams(tokens: List[str]):
+    filtered_tokens = [
+        token.title() for token in tokens if not token in stopwords.words("english")
+    ]
+    return filtered_tokens
+
+
+def extract_bigrams(tokens: List[str]):
     bigram_tuples = ngrams(tokens, 2)
-    bigrams = [' '.join(bigram_tuple) for bigram_tuple in bigram_tuples]
+    bigrams = [" ".join(bigram_tuple).title() for bigram_tuple in bigram_tuples]
     return bigrams
 
 
-def extract_trigram(tokens: List[str]):
+def extract_trigrams(tokens: List[str]):
     trigram_tuples = ngrams(tokens, 3)
-    trigrams = [' '.join(trigram_tuple) for trigram_tuple in trigram_tuples]
+    trigrams = [" ".join(trigram_tuple).title() for trigram_tuple in trigram_tuples]
     return trigrams
 
 
-def create_or_update_word_trends(tweet, tokens):
+def create_or_update_unigram_trends(tweet, tokens):
     for token in tokens:
         trend, _ = Trend.objects.get_or_create(phrase=token)
         trend.hits = F("hits") + 1
@@ -54,11 +59,11 @@ def create_or_update_trigram_trends(tweet, trigram_tokens):
 def analyse_tweet_trends(tweet: Tweet):
     content = tweet.content
     tokens = extract_tokens(content.lower())
-    tokens_wo_stopwords = [token for token in tokens if not token in stopwords.words("english")]
-    
-    bigrams = extract_bigram(tokens)
-    trigrams = extract_trigram(tokens)
-    
-    create_or_update_word_trends(tweet, tokens_wo_stopwords)
+
+    unigrams = extract_unigrams(tokens)
+    bigrams = extract_bigrams(tokens)
+    trigrams = extract_trigrams(tokens)
+
+    create_or_update_unigram_trends(tweet, unigrams)
     create_or_update_bigram_trends(tweet, bigrams)
     create_or_update_trigram_trends(tweet, trigrams)

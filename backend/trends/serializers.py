@@ -16,4 +16,4 @@ class TrendSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trend
-        fields = ['phrase', 'tweets', 'likes', 'dislikes']
+        fields = ['phrase', 'tweets']

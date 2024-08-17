@@ -24,40 +24,28 @@
       <div class="tab-content" id="nav-tabContent">
         <div class="tab-pane fade show active" id="nav-posts" role="tabpanel" aria-labelledby="nav-posts-tab"
           tabindex="0">
-          <TweetCard v-for="tweet in tweets" :key="tweet.id" :id="tweet.id" :content="tweet.content"
-            :author="tweet.author" :created_at="tweet.created_at" :referenced_tweet="tweet.referenced_tweet"
-            :owner="tweet.owner" :tweet_type="tweet.tweet_type" />
+          <TweetList :tweets="tweets" />
         </div>
         <div class="tab-pane fade" id="nav-replies" role="tabpanel" aria-labelledby="nav-replies-tab" tabindex="0">
-          <TweetCard v-for="tweet in replies" :key="tweet.id" :id="tweet.id" :content="tweet.content"
-            :author="tweet.author" :created_at="tweet.created_at" :referenced_tweet="tweet.referenced_tweet"
-            :owner="tweet.owner" :tweet_type="tweet.tweet_type" />
+          <TweetList :tweets="replies" />
         </div>
 
         <div class="tab-pane fade" id="nav-quotes" role="tabpanel" aria-labelledby="nav-quotes-tab" tabindex="0">
-          <TweetCard v-for="tweet in quotes" :key="tweet.id" :id="tweet.id" :content="tweet.content"
-            :author="tweet.author" :created_at="tweet.created_at" :referenced_tweet="tweet.referenced_tweet"
-            :owner="tweet.owner" :tweet_type="tweet.tweet_type" />
+          <TweetList :tweets="quotes" />
         </div>
 
         <div class="tab-pane fade" id="nav-retweets" role="tabpanel" aria-labelledby="nav-retweets-tab" tabindex="0">
-          <RetweetCard v-for="tweet in retweets" :key="tweet.referenced_tweet.id" :id="tweet.referenced_tweet.id"
-            :content="tweet.referenced_tweet.content" :author="tweet.referenced_tweet.author"
-            :created_at="tweet.referenced_tweet.created_at" :retweeted_by="tweet.author.username" />
+          <TweetList :tweets="retweets" />
         </div>
 
         <div class="tab-pane fade" id="nav-liked-tweets" role="tabpanel" aria-labelledby="nav-liked-tweets-tab"
           tabindex="0">
-          <TweetCard v-for="tweet in liked_tweets" :key="tweet.id" :id="tweet.id" :content="tweet.content"
-            :author="tweet.author" :created_at="tweet.created_at" :referenced_tweet="tweet.referenced_tweet"
-            :owner="tweet.owner" :tweet_type="tweet.tweet_type" />
+          <TweetList :tweets="liked_tweets" />
         </div>
 
         <div class="tab-pane fade" id="nav-disliked-tweets" role="tabpanel" aria-labelledby="nav-disliked-tweets-tab"
           tabindex="0">
-          <TweetCard v-for="tweet in disliked_tweets" :key="tweet.id" :id="tweet.id" :content="tweet.content"
-            :author="tweet.author" :created_at="tweet.created_at" :referenced_tweet="tweet.referenced_tweet"
-            :owner="tweet.owner" :tweet_type="tweet.tweet_type" />
+          <TweetList :tweets="disliked_tweets" />
         </div>
       </div>
     </div>
@@ -67,16 +55,14 @@
 
 <script>
 import axios from "axios";
-import TweetCard from "./TweetCard.vue";
 import UserDetailCard from "./UserDetailCard.vue";
-import RetweetCard from "./RetweetCard.vue";
+import TweetList from "./TweetList.vue";
 
 
 export default {
   name: "UserProfileVue",
   components: {
-    TweetCard,
-    RetweetCard,
+    TweetList,
     UserDetailCard
   },
   props: {
@@ -148,7 +134,6 @@ export default {
       })
         .then((response) => {
           this.liked_tweets = response.data;
-          console.log(this.liked_tweets)
         })
         .catch((error) => {
           console.log(error);

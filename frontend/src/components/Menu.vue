@@ -7,34 +7,34 @@
                 </a>
             </li>
             <li class="nav-item">
-                <RouterLink :to="{name: 'HomePage'}" class="nav-link">
+                <RouterLink :to="{ name: 'HomePage' }" class="nav-link">
                     <span class="me-2"><i class="bi bi-house-door"></i></span> Home
                 </RouterLink>
             </li>
             <li class="nav-item">
-                <RouterLink :to="{name: 'ProfilePage', params: {username: this.$store.state.username}}" class="nav-link">
+                <RouterLink :to="{ name: 'ProfilePage', params: { username: this.$store.state.username } }"
+                    class="nav-link">
                     <span class="me-2"><i class="bi bi-person"></i></span> Profile
                 </RouterLink>
             </li>
             <li class="nav-item">
-                <RouterLink :to="{name: 'FollowersPage', params: {username: this.$store.state.username}}" class="nav-link">
+                <RouterLink :to="{ name: 'FollowersPage', params: { username: this.$store.state.username } }"
+                    class="nav-link">
                     <span class="me-2"><i class="bi bi-person-walking"></i></span> Following
                 </RouterLink>
             </li>
             <li class="nav-item">
-                <RouterLink :to="{name: 'NotificationsPage'}" class="nav-link">
-                    <span class="me-2"><i class="bi bi-bell"></i></span> 
-                    Notifications <span v-if="notification_count > 0" class="badge text-bg-primary">{{ notification_count }}</span>
+                <RouterLink :to="{ name: 'NotificationsPage' }" class="nav-link">
+                    <span class="me-2"><i class="bi bi-bell"></i></span>
+                    Notifications <span v-if="notification_count > 0" class="badge text-bg-primary">{{
+                        notification_count }}</span>
                 </RouterLink>
-                <!-- <a href="#" class="nav-link ">
-                    <span class="me-2"><i class="bi bi-bell"></i></span> 
-                    Notifications <span v-if="notification_count > 0" class="badge text-bg-primary">{{ notification_count }}</span>
-                </a> -->
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link ">
-                    <span class="me-2"><i class="bi bi-search"></i></span> Explore
-                </a>
+                <RouterLink :to="{ name: 'ExplorePage' }" class="nav-link">
+                    <span class="me-2"><i class="bi bi-search"></i></span>
+                    Explore
+                </RouterLink>
             </li>
             <li class="nav-item" @click="sign_out">
                 <a href="#" class="nav-link ">
@@ -89,6 +89,7 @@ export default {
 .nav-link {
     font-size: large;
 }
+
 .badge {
     font-size: 9px;
 }

@@ -1,3 +1,4 @@
+import string
 from datetime import datetime
 from typing import List
 from django.utils.timezone import make_aware
@@ -8,6 +9,8 @@ from timeline.models import TimeLine
 from followers.models import Follower
 from tweets.models import Tweet
 from notifications.models import Notification, NotificationType
+from trends.trend_analysis import analyse_tweet_trends
+
 
 
 def reformat_tweet_timestamp(timestamp_str: str):
@@ -40,12 +43,7 @@ def reformat_tweet_timestamp(timestamp_str: str):
 
 
 def clean_username(username_token: str):
-    punctuations = [".", ",", "/", "\\", "!", "?"]
-
-    while username_token[-1] in punctuations:
-        username_token = username_token[:-1]
-
-    return username_token
+    return username_token.rstrip(string.punctuation)
 
 
 def detect_username_mention(content):
@@ -57,6 +55,7 @@ def detect_username_mention(content):
 def push_tweet_to_timeline(tweet: Tweet):
     timeline_tweet = TimeLine.objects.create(tweet=tweet)
     timeline_tweet.viewers.add(tweet.author)
+    analyse_tweet_trends(tweet)
 
 
 def push_tweet_to_followers(account: Account, tweet: Tweet):
@@ -140,7 +139,9 @@ def create_dislike_notification(
     return notification
 
 
-def create_retweet_notification(sender: Account, recipient: Account, reposted_tweet: Tweet):
+def create_retweet_notification(
+    sender: Account, recipient: Account, reposted_tweet: Tweet
+):
     notification = create_notification(
         sender=sender,
         recipient=recipient,
@@ -179,3 +180,4 @@ def create_reply_notification(
 
 def mark_notification_as_read(notifications_qs: QuerySet):
     pass
+

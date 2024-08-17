@@ -1,16 +1,15 @@
 <template>
     <div class="vh-100">
-        <form class="card mt-4 mb-3">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search">
-            </div>
-        </form>
+        <SearchBar />
         <div class="list-group border border-1 ">
             <div class="list-group-item fw-bold fs-5">What's happening</div>
-            <a v-for="(trend, key) in trends" :key="key" href="#" class="list-group-item list-group-item-action">
-                <h6 class="fw-bold mb-0">{{ trend.phrase }}</h6>
-                <small class="text-muted">{{ trend.hits }} posts</small>
-            </a>
+            <template v-for="(trend, key) in trends" :key="key">
+                <RouterLink :to="{ name: 'TrendFeedPage', params: { trend_term: trend.phrase } }"
+                    class="list-group-item list-group-item-action">
+                    <h6 class="fw-bold mb-0">{{ trend.phrase }}</h6>
+                    <small class="text-muted">{{ trend.hits }} posts</small>
+                </RouterLink>
+            </template>
         </div>
     </div>
 </template>
@@ -19,10 +18,13 @@
 
 <script>
 import axios from 'axios';
+import SearchBar from './SearchBar.vue';
 
 export default {
     name: 'TrendList',
-    components: {},
+    components: {
+        SearchBar
+    },
     props: {
         limit: {
             type: Number,

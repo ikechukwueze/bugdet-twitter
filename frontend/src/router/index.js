@@ -6,6 +6,7 @@ import FollowersVue from "@/views/Followers.vue"
 import NotificationsVue from "@/views/Notifications.vue"
 import ThreadVue from "@/views/Thread.vue"
 import ExploreVue from "@/views/Explore.vue"
+import TrendFeed from "@/views/TrendFeed.vue"
 // import LostPup from "@/views/404.vue"
 import store from "@/store"
 //import NProgress from 'nprogress';
@@ -50,6 +51,12 @@ const routes = [
         path: "/explore/",
         name: "ExplorePage",
         component: ExploreVue,
+        props: true
+    },
+    {
+        path: "/explore/trends/:trend_term",
+        name: "TrendFeedPage",
+        component: TrendFeed,
         props: true
     },
     // {

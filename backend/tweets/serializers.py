@@ -40,7 +40,7 @@ class TweetSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Tweet
-        fields = '__all__'
+        fields = ['id', 'author', 'content', 'tweet_type', 'referenced_tweet', 'created_at']
     
     def to_representation(self, instance):
         repr = super().to_representation(instance)

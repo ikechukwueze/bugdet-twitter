@@ -1,15 +1,15 @@
 <template>
-    <form @submit.prevent="search" class="input-group mt-4 mb-3">
-        <input v-model="search_query" type="text" class="form-control" :placeholder="placeholder    "
+    <form @submit.prevent="push_to_search" class="input-group mt-4 mb-3">
+        <input v-model="search_query" type="text" class="form-control" :placeholder="placeholder" required
             aria-describedby="button-addon2">
-        <button class="btn btn-outline-secondary" type="button" id="button-addon2"><span><i class="bi bi-search"></i></span></button>
+        <button class="btn btn-outline-secondary" type="submit" id="button-addon2"><span><i class="bi bi-search"></i></span></button>
     </form>
 </template>
 
 
 
 <script>
-import axios from 'axios';
+import router from '@/router';
 
 export default {
     name: 'SearchBar',
@@ -24,21 +24,11 @@ export default {
     data() {
         return {
             search_query: '',
-            tweets: [],
         };
     },
     methods: {
-        search() {
-            axios({
-                method: "get",
-                url: `/trends/?limit=100`,
-            })
-                .then((response) => {
-                    this.tweets = response.data.results;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        push_to_search() {
+            router.push({ name: 'SearchResultsPage', params: { search_query: this.search_query } })
         },
     },
 

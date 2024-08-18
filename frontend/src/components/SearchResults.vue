@@ -1,79 +1,101 @@
 <template>
-  <div class="col-9 mt-4 w-100 text-start">
-    <h4 v-if="tweets.length === 0">Trying search for something else.</h4>
-    <template v-for="tweet in tweets">
-      <template v-if="tweet.tweet_type === 'RETWEET'">
-        <RetweetCard
-          :key="tweet.referenced_tweet.id"
-          :id="tweet.referenced_tweet.id"
-          :content="tweet.referenced_tweet.content"
-          :author="tweet.referenced_tweet.author"
-          :created_at="tweet.referenced_tweet.created_at"
-          :retweeted_by="tweet.author.username"
-        />
-      </template>
-      <template v-else>
-        <TweetCard
-          :key="tweet.id"
-          :id="tweet.id"
-          :content="tweet.content"
-          :author="tweet.author"
-          :created_at="tweet.created_at"
-          :referenced_tweet="tweet.referenced_tweet"
-          :owner="tweet.owner"
-          :tweet_type="tweet.tweet_type"
-          @tweet-interaction="get_timeline"
-        />
-      </template>
-    </template>
-  </div>
+    <div class="col-9 mt-4 w-100 text-start">
+        <nav>
+            <div class="nav nav-pills nav-fill" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-search-toptweets-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-search-toptweets" type="button" role="tab" aria-controls="nav-search-toptweets"
+                    aria-selected="true">Top</button>
+
+                <button class="nav-link" id="nav-search-latesttweets-tab" data-bs-toggle="tab"
+                    data-bs-target="#nav-search-latesttweets" type="button" role="tab" aria-controls="nav-search-latesttweets"
+                    aria-selected="false">Latest</button>
+            </div>
+        </nav>
+        <div class="tab-content px-3" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-search-toptweets" role="tabpanel"
+                aria-labelledby="nav-search-toptweets-tab" tabindex="0">
+                <TweetList :tweets="top_search_results" />
+            </div>
+            <div class="tab-pane fade" id="nav-search-latesttweets" role="tabpanel" aria-labelledby="nav-search-latesttweets-tab"
+                tabindex="0">
+                <TweetList :tweets="latest_search_results" />
+            </div>
+        </div>
+    </div>
 </template>
 
+
+
 <script>
-import axios from "axios";
-import TweetCard from "./TweetCard.vue";
-import RetweetCard from "./RetweetCard.vue";
+import axios from 'axios';
+import TweetList from './TweetList.vue';
 
 
 export default {
-  name: "SearchResults",
-  components: {
-    TweetCard,
-    RetweetCard
-  },
-  props: {
-    search_query: String
-  },
-  data() {
-    return {
-      tweets: [],
-    };
-  },
-  methods: {
-    get_search_results() {
-      axios({
-        method: "get",
-        url: `/tweets?search=${this.search_query}`,
-      })
-        .then((response) => {
-          this.tweets = response.data.result;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+    name: 'SearchResults',
+    components: {
+        TweetList
+    },
+    props: {
+        search_query: String
+    },
+    data() {
+        return {
+            top_search_results: [],
+            latest_search_results: []
+        };
+    },
+    methods: {
+        get_search_top_results(query) {
+            axios({
+                method: "get",
+                url: `search/tweets/?search=${query}&ordering=-interactions&limit=100`,
+            })
+                .then((response) => {
+                    this.top_search_results = response.data.results;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        get_search_latest_results(query) {
+            axios({
+                method: "get",
+                url: `search/tweets/?search=${query}&ordering=-created_at&limit=100`,
+            })
+                .then((response) => {
+                    this.latest_search_results = response.data.results;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
     },
 
-    
+    created() {
+        this.get_search_top_results(this.search_query)
+        this.get_search_latest_results(this.search_query)
+    },
+    watch: {
+        search_query(new_query) {
+            this.get_search_top_results(new_query)
+            this.get_search_latest_results(new_query)
+        }
+    }
 
-  },
-  async created() {
-    this.get_search_results();
-  },
-};
+}
 </script>
 
 <style>
-.main {
-  max-width: 1200px;
+.list-group-item {
+    border: 0px;
+}
+
+.trend-topic {
+    margin-bottom: 0px;
+}
+
+.list-group-item {
+    text-align: left
 }
 </style>

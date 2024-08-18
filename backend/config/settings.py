@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'followers',
     'notifications',
     'trends',
+    'search',
 ]
 
 MIDDLEWARE = [

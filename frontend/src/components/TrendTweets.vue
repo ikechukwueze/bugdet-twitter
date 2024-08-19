@@ -49,7 +49,7 @@ export default {
         get_trend_top_tweets(trend_term) {
             axios({
                 method: "get",
-                url: `search/trends/?search=${trend_term}&ordering=-interactions&limit=100`,
+                url: `search/trends/?search=${trend_term}&ordering=-engagement&limit=100`,
             })
                 .then((response) => {
                     this.top_tweets = response.data.results;

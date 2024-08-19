@@ -26,8 +26,8 @@ class SearchTweetResult(generics.ListAPIView):
     serializer_class = ExtendedTweetSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['author__username', 'content']
-    ordering_fields = ['interactions', 'created_at']
-    ordering = ['interactions']
+    ordering_fields = ['engagement', 'created_at']
+    ordering = ['-engagement']
 
     def get_queryset(self):
         qs = (
@@ -38,7 +38,7 @@ class SearchTweetResult(generics.ListAPIView):
                 reference_count=Count("referenced_tweets", distinct=True),
             )
             .annotate(
-                interactions=F("like_count")
+                engagement=F("like_count")
                 + F("dislike_count")
                 + F("reference_count")
             )
@@ -52,8 +52,8 @@ class SearchTrendResult(generics.ListAPIView):
     serializer_class = ExtendedTweetSerializer
     filter_backends = [ExtendedSearchFilter, filters.OrderingFilter]
     search_fields = ['~trends__phrase']
-    ordering_fields = ['interactions', 'created_at']
-    ordering = ['-interactions']
+    ordering_fields = ['engagement', 'created_at']
+    ordering = ['-engagement']
 
     def get_queryset(self):
         qs = (
@@ -64,7 +64,7 @@ class SearchTrendResult(generics.ListAPIView):
                 reference_count=Count("referenced_tweets", distinct=True),
             )
             .annotate(
-                interactions=F("like_count")
+                engagement=F("like_count")
                 + F("dislike_count")
                 + F("reference_count")
             )

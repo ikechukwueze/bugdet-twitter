@@ -14,7 +14,12 @@
         <div class="tab-content px-3" id="nav-tabContent">
             <div class="tab-pane fade show active" id="nav-search-toptweets" role="tabpanel"
                 aria-labelledby="nav-search-toptweets-tab" tabindex="0">
-                <TweetList :tweets="top_search_results" />
+                <template v-if="top_search_results.length > 0">
+                    <TweetList :tweets="top_search_results" />
+                </template>
+                <template v-else>
+                    <p class="mt-3 fw-bold fs-4 text-muted">Search returned no results.</p>
+                </template>
             </div>
             <div class="tab-pane fade" id="nav-search-latesttweets" role="tabpanel" aria-labelledby="nav-search-latesttweets-tab"
                 tabindex="0">
@@ -49,7 +54,7 @@ export default {
         get_search_top_results(query) {
             axios({
                 method: "get",
-                url: `search/tweets/?search=${query}&ordering=-interactions&limit=100`,
+                url: `search/tweets/?search=${query}&ordering=-engagement&limit=100`,
             })
                 .then((response) => {
                     this.top_search_results = response.data.results;

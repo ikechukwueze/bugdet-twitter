@@ -2,7 +2,7 @@
     <div class="d-flex flex-column flex-shrink-0 py-3 text-dark vh-100">
         <ul class="nav nav-pills flex-column mb-auto text-start">
             <li class="nav-item mb-4">
-                <a href="#" class="nav-link fw-bold" aria-current="page">
+                <a href="/" class="nav-link fw-bold" aria-current="page">
                     <span class="me-0"><i class="bi bi-feather"></i></span> Budget Twitter
                 </a>
             </li>

@@ -2,7 +2,6 @@
   <div class="row">
     <div class="d-flex p-3 my-2 border rounded-3">
       <div class="flex-shrink-0">
-        <!-- <img class="rounded-circle profile-pic" :src="follower.profile_pic" /> -->
         <ProfilePic :profile_pic_url="follower.profile_pic" :username="follower.username" />
       </div>
       <div class="card ms-1 w-100 border-0">
@@ -16,11 +15,11 @@
             </div>
             <div>
               <span>
-                <template v-if="is_following">
-                  <button class="btn btn-sm btn-primary">Following</button>
+                <template v-if="follows_user">
+                  <button class="btn btn-sm btn-primary" @click="unfollow">Following</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn-sm btn-primary">Follow back</button>
+                  <button class="btn btn-sm btn-primary" @click="follow">Follow back</button>
                 </template>
               </span>
             </div>
@@ -37,6 +36,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import ProfilePic from './ProfilePic.vue';
 
 export default {
@@ -55,13 +55,39 @@ export default {
   },
   data() {
     return {
+      follows_user: false
     };
   },
 
   methods: {
+    follow() {
+      axios({
+        method: "post",
+        url: `/followers/${this.follower.username}/follow/`,
+      })
+        .then(() => {
+          this.follows_user = true
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    unfollow() {
+      axios({
+        method: "post",
+        url: `/followers/${this.follower.username}/unfollow/`,
+      })
+        .then(() => {
+          this.follows_user = false
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
   },
 
   created() {
+    this.follows_user = this.is_following
   },
 };
 </script>

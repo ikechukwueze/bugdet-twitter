@@ -2,7 +2,7 @@
   <div class="row">
     <div class="d-flex p-3 my-2 border rounded-3">
       <div class="flex-shrink-0">
-        <img class="rounded-circle profile-pic" :src="account.profile_pic" />
+        <ProfilePic :profile_pic_url="account.profile_pic" :username="account.username" />
       </div>
       <div class="card ms-1 w-100 border-0">
         <div class="card-header border-0 bg-white">
@@ -15,12 +15,11 @@
             </div>
             <div>
               <template v-if="follows_back">
-                  <button class="btn btn-sm btn-primary">Follows you</button>
+                  <button class="btn btn-sm btn-primary disabled">Follows you</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn-sm btn-primary">Following</button>
+                  <button class="btn btn-sm btn-primary disabled">Following</button>
                 </template>
-              <!-- <span><button class="btn btn-sm btn-primary">Follow</button></span> -->
             </div>
           </div>
         </div>
@@ -35,9 +34,12 @@
 </template>
 
 <script>
+import ProfilePic from './ProfilePic.vue';
+
 export default {
   name: "FollowingCard",
   components: {
+    ProfilePic
   },
   props: {
     account: {

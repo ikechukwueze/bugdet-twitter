@@ -1,49 +1,10 @@
-<!-- <template>
-  <div class="row">
-    <div class="d-flex p-3 my-2 border rounded-3">
-      <div class="flex-shrink-0">
-        <img class="rounded-circle profile-pic" :src="author.profile_pic" />
-      </div>
-      <div class="card ms-0 w-100 border-0">
-        <div class="card-header border-0 bg-white">
-          <div class="d-flex justify-content-between">
-            <div>
-              Replying to
-              <span class="fw-bold">
-                @{{ author.username }}
-              </span>
-            </div>
-            <div>
-              <span><small>{{ created_at }}</small></span>
-            </div>
-          </div>
-        </div>
-        <div class="card-body py-1 px-0">
-          <form @submit.prevent="post_tweet">
-            <div class="card-footer text-muted d-flex justify-content-end border-0 bg-white">
-              <button class="btn btn-sm" type="submit" style="background-color: blue; color: white">
-                Repost
-              </button>
-            </div>
-            <div class="card-body py-1 bg-transparent">
-              <textarea class="form-control bg-transparent border-0" minlength="1" maxlength="280s"
-                id="exampleFormControlTextarea1" placeholder="Add a comment" rows="3" v-model="content"
-                required></textarea>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-</template> -->
-
 
 
 <template>
 
   <div class="d-flex p-3 my-2 border-0 rounded-3">
     <div class="flex-shrink-0">
-      <img class="rounded-circle profile-pic" :src="author.profile_pic" />
+      <ProfilePic :profile_pic_url="profile_pic" :username="username" />
     </div>
 
     <div class="card ms-1 w-100 border-0">
@@ -86,11 +47,13 @@
 <script>
 import axios from "axios";
 import SimpleTweetCard from "./SimpleTweetCard"
+import ProfilePic from "./ProfilePic.vue";
 
 export default {
-  name: "TweetForm",
+  name: "QuoteTweetForm",
   components: {
     SimpleTweetCard,
+    ProfilePic
   },
   props: {
     id: Number,
@@ -102,6 +65,7 @@ export default {
     return {
       username: this.$store.state.username,
       display_name: this.$store.state.display_name,
+      profile_pic: this.$store.state.profile_pic,
       repost: "",
     };
   },

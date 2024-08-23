@@ -2,7 +2,8 @@
   <div class="row">
     <div class="d-flex p-3 my-2 border rounded-3">
       <div class="flex-shrink-0">
-        <img class="rounded-circle profile-pic" :src="follower.profile_pic" />
+        <!-- <img class="rounded-circle profile-pic" :src="follower.profile_pic" /> -->
+        <ProfilePic :profile_pic_url="follower.profile_pic" :username="follower.username" />
       </div>
       <div class="card ms-1 w-100 border-0">
         <div class="card-header border-0 bg-white">
@@ -36,9 +37,12 @@
 </template>
 
 <script>
+import ProfilePic from './ProfilePic.vue';
+
 export default {
   name: "FollowerCard",
   components: {
+    ProfilePic
   },
   props: {
     follower: {

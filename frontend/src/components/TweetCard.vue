@@ -3,9 +3,7 @@
     <div class="d-flex p-3 my-2 border rounded-3">
 
       <div class="flex-shrink-0">
-        <a :href="'/profile/' + username">
-          <img class="rounded-circle profile-pic" :src="author.profile_pic" />
-        </a>
+        <ProfilePic :profile_pic_url="author.profile_pic" :username="username" />
       </div>
 
 
@@ -149,6 +147,7 @@ import SimpleTweetCard from "./SimpleTweetCard"
 import ReplyTweetForm from "./ReplyTweetForm.vue"
 import QuoteTweetForm from "./QuoteTweetForm.vue"
 import DeletedTweetCard from "./DeletedTweetCard.vue";
+import ProfilePic from "./ProfilePic.vue";
 import router from "@/router";
 
 let uid = 0;
@@ -160,6 +159,7 @@ export default {
     ReplyTweetForm,
     QuoteTweetForm,
     DeletedTweetCard,
+    ProfilePic
   },
   props: {
     id: Number,

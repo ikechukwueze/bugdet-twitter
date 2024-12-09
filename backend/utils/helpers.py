@@ -1,15 +1,10 @@
 import string
 from datetime import datetime
-from typing import List
 from django.utils.timezone import make_aware
 from django.utils import timezone
-from django.db.models import QuerySet, F
 from accounts.models import Account
-from timeline.models import TimeLine
-from followers.models import Follower
 from tweets.models import Tweet
-from notifications.models import Notification, NotificationType
-from trends.trend_analysis import analyse_tweet_trends
+from notifications.models import Notification
 
 
 
@@ -52,23 +47,6 @@ def detect_username_mention(content):
     return mentions
 
 
-def push_tweet_to_timeline(tweet: Tweet):
-    timeline_tweet = TimeLine.objects.create(tweet=tweet)
-    timeline_tweet.viewers.add(tweet.author)
-    analyse_tweet_trends(tweet)
-
-
-def push_tweet_to_followers(account: Account, tweet: Tweet):
-    try:
-        timeline_tweet = TimeLine.objects.get(tweet=tweet)
-    except TimeLine.DoesNotExist:
-        pass
-    else:
-        account_followers = Follower.objects.filter(account=account)
-        followers = [obj.follower for obj in account_followers]
-        timeline_tweet.viewers.add(*followers)
-
-
 def create_notification(
     sender: Account,
     recipient: Account,
@@ -85,99 +63,3 @@ def create_notification(
             notification_type=notification_type,
         )
         return notification
-
-
-def create_follow_notification(sender: Account, recipient: Account):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        recipient_tweet=None,
-        sender_tweet=None,
-        notification_type=NotificationType.FOLLOW,
-    )
-    return notification
-
-
-def create_mention_notification(sender: Account, tweet: Tweet):
-    mentions = detect_username_mention(tweet.content)
-    for username in mentions:
-        try:
-            recipient = Account.objects.get(username=username)
-        except Account.DoesNotExist:
-            continue
-        else:
-            create_notification(
-                sender=sender,
-                recipient=recipient,
-                recipient_tweet=None,
-                sender_tweet=tweet,
-                notification_type=NotificationType.MENTION,
-            )
-
-
-def create_like_notification(sender: Account, recipient: Account, liked_tweet: Tweet):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        recipient_tweet=liked_tweet,
-        sender_tweet=None,
-        notification_type=NotificationType.LIKE,
-    )
-    return notification
-
-
-def create_dislike_notification(
-    sender: Account, recipient: Account, disliked_tweet: Tweet
-):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        recipient_tweet=disliked_tweet,
-        sender_tweet=None,
-        notification_type=NotificationType.DISLIKE,
-    )
-    return notification
-
-
-def create_retweet_notification(
-    sender: Account, recipient: Account, reposted_tweet: Tweet
-):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        recipient_tweet=reposted_tweet,
-        sender_tweet=None,
-        notification_type=NotificationType.RETWEET,
-    )
-    return notification
-
-
-def create_quote_notification(
-    sender: Account, recipient: Account, quoted_tweet: Tweet, quote: Tweet
-):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        recipient_tweet=quoted_tweet,
-        sender_tweet=quote,
-        notification_type=NotificationType.QUOTE,
-    )
-    return notification
-
-
-def create_reply_notification(
-    sender: Account, recipient: Account, original_tweet: Tweet, reply: Tweet
-):
-    notification = create_notification(
-        sender=sender,
-        recipient=recipient,
-        sender_tweet=reply,
-        recipient_tweet=original_tweet,
-        notification_type=NotificationType.REPLY,
-    )
-    return notification
-
-
-def mark_notification_as_read(notifications_qs: QuerySet):
-    pass
-

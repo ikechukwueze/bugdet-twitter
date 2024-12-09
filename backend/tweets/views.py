@@ -9,15 +9,13 @@ from rest_framework.generics import (
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, response
-from utils.helpers import (
-    push_tweet_to_timeline,
-    push_tweet_to_followers,
-    create_mention_notification,
+from .tasks import (
     create_like_notification,
     create_dislike_notification,
-    create_reply_notification,
-    create_quote_notification,
-    create_retweet_notification,
+    process_tweet,
+    process_reply_tweet,
+    process_quote_tweet,
+    process_retweet,
 )
 from .serializers import TweetSerializer, ReplyTweetSerializer, QuoteTweetSerializer
 from .models import Tweet, TweetType, LikedTweet, DislikedTweet
@@ -33,9 +31,7 @@ class PostTweetView(APIView):
         serializer = TweetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         tweet = serializer.save(author=self.request.user, tweet_type=TweetType.TWEET)
-        push_tweet_to_timeline(tweet)
-        push_tweet_to_followers(self.request.user, tweet)
-        create_mention_notification(self.request.user, tweet)
+        process_tweet.delay_on_commit(tweet.id)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -48,15 +44,7 @@ class ReplyTweetView(APIView):
         serializer = ReplyTweetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         tweet = serializer.save(author=self.request.user, tweet_type=TweetType.REPLY)
-        push_tweet_to_timeline(tweet)
-        push_tweet_to_followers(self.request.user, tweet)
-        create_reply_notification(
-            sender=self.request.user,
-            recipient=tweet.referenced_tweet.author,
-            reply=tweet,
-            original_tweet=tweet.referenced_tweet,
-        )
-        create_mention_notification(self.request.user, tweet)
+        process_reply_tweet.delay_on_commit(tweet.id)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -69,15 +57,7 @@ class QuoteTweetView(APIView):
         serializer = QuoteTweetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         tweet = serializer.save(author=self.request.user, tweet_type=TweetType.QUOTE)
-        push_tweet_to_timeline(tweet)
-        push_tweet_to_followers(self.request.user, tweet)
-        create_quote_notification(
-            sender=self.request.user,
-            recipient=tweet.referenced_tweet.author,
-            quoted_tweet=tweet.referenced_tweet,
-            quote=tweet,
-        )
-        create_mention_notification(self.request.user, tweet)
+        process_quote_tweet.delay_on_commit(tweet.id)
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -98,11 +78,7 @@ class RetweetView(APIView):
             retweet.delete()
             return response.Response(status=status.HTTP_204_NO_CONTENT)
 
-        push_tweet_to_timeline(retweet)
-        push_tweet_to_followers(account, retweet)
-        create_retweet_notification(
-            sender=account, recipient=tweet.author, reposted_tweet=tweet
-        )
+        process_retweet.delay_on_commit(retweet.id, tweet.id)
         return response.Response(status=status.HTTP_201_CREATED)
 
 
@@ -136,7 +112,7 @@ class UserTweetsView(ListAPIView):
         username = self.kwargs["username"]
         return Tweet.objects.filter(
             author__username=username, tweet_type=TweetType.TWEET
-        )
+        ).order_by("-created_at")
 
 
 class UserRepliesView(ListAPIView):

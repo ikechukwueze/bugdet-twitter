@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2o@@e2f&*l&+bdz#u+fo=yl=4e9fs+@qvku2-t54$6&egt9npw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
@@ -156,3 +156,7 @@ REST_FRAMEWORK = {
 
 LOGIN_URL = '/admin/login/'
 LOGOUT_URL = '/admin/logout/'
+
+# celery broker and result
+CELERY_BROKER_URL = 'redis://redis-service:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis-service:6379/0'

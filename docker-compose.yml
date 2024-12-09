@@ -1,0 +1,60 @@
+services:
+  backend-service:
+    build: ./backend/
+    container_name: django-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend/:/usr/project/backend/
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis-service
+
+  frontend-service:
+    build: ./frontend/
+    container_name: vue-frontend
+    ports:
+      - 8080:8080
+    depends_on:
+      - backend-service
+  
+  redis-service:
+    container_name: redis-service
+    image: redis:alpine
+
+  celery-service:
+    build: ./backend/
+    container_name: celery-service
+    command: celery -A config worker -l info
+    volumes:
+      - ./backend/:/usr/project/backend/
+    depends_on:
+      - redis-service
+  
+  flower:
+    image: mher/flower
+    container_name: flower
+    command: celery flower #--persisten=True
+    environment:
+      - CELERY_BROKER_URL=redis://redis-service
+      - FLOWER_PORT=8888
+    ports:
+    - 8888:8888
+    depends_on:
+      - celery-service
+      - redis-service
+
+  # flower:
+  #   build: ./backend/
+  #   command: celery -A tasks flower
+  #   volumes:
+  #     - ./examples:/data
+  #   working_dir: /data
+  #   ports:
+  #     - 5555:5555
+  #   environment:
+  #     CELERY_BROKER_URL: redis://redis-service
+  #     CELERY_RESULT_BACKEND: redis://redis-service
+  #   depends_on:
+  #     - celery-service
+  #     - redis-service

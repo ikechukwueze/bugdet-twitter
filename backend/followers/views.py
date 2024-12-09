@@ -6,12 +6,40 @@ from rest_framework.generics import ListAPIView
 from rest_framework import response, status
 from accounts.models import Account
 from notifications.models import NotificationType
-from utils.helpers import create_follow_notification
+from .tasks import create_follow_notification
 from .models import Follower
 from .serializers import FollowerSerializer, FollowingSerializer
 
 
 # Create your views here.
+
+
+class FollowUnfollowToggleView(APIView):
+    def get_object(self, username):
+        return get_object_or_404(Account, username=username)
+
+    @transaction.atomic
+    def post(self, request, username):
+        account = self.get_object(username)
+        
+        if account == self.request.user:
+            return response.Response(
+            {"error": "You can not follow yourself."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+        
+
+        if not account == self.request.user:
+            Follower.objects.get_or_create(account=account, follower=self.request.user)
+            create_follow_notification(self.request.user, account)
+            return response.Response(status=status.HTTP_201_CREATED)
+        return response.Response(
+            {"error": "You can not follow yourself."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
 
 
 class FollowUserView(APIView):
